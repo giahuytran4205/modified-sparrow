@@ -120,7 +120,7 @@ fn main() -> Result<()> {
     info!("[SQUARE SEARCH] Range: [{:.2} - {:.2}]", low, high);
 
     // --- 6. VÒNG LẶP SEQUENTIAL BINARY SEARCH ---
-    while (high - low) > 0.001 { // Độ chính xác dừng 0.05
+    while (high - low) > 0.00001 { // Độ chính xác dừng 0.05
         let mid = (low + high) / 2.0;
         let mut success = false;
         
