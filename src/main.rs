@@ -126,7 +126,7 @@ fn main() -> Result<()>{
     // Cận dưới: 0 (hoặc kích thước item lớn nhất nếu bạn biết)
     let mut low = min_theoretical_side; 
     // Cận trên: strip_height gốc từ file JSON (đảm bảo file gốc là giá trị chạy được)
-    let mut high = min_theoretical_side * 2.0;
+    let mut high = min_theoretical_side * 3.0;
     
     // Biến lưu kết quả tốt nhất tìm được
     let mut best_strip_height = high;
