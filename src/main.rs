@@ -180,7 +180,7 @@ fn main() -> Result<()> {
 
     // --- 7. FINAL POLISH (CHẠY KỸ LẦN CUỐI) ---
     info!("\n=== FINAL OPTIMIZATION (Using full config) ===");
-    info!("Best square side found: {:.2}. Refining...", best_strip_height);
+    info!("Best square side found: {}. Refining...", best_strip_height);
     
     // Dùng config gốc (thời gian dài)
     let rng = Xoshiro256PlusPlus::seed_from_u64(master_seed);
