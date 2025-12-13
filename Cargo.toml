@@ -37,6 +37,7 @@ clap = { version = "4.5", features = ["derive"] }
 anyhow = "1.0"
 ndarray = "0.17"
 rand_xoshiro = "0.7"
+tikv-jemallocator = "0.6"
 
 getrandom = { version = "0.3", features = ["wasm_js"] }
 
@@ -59,6 +60,8 @@ debug = true
 [profile.release]
 opt-level = 3
 lto = "fat"
+codegen-units = 1
+panic = "abort"
 
 [profile.test]
 opt-level = 3

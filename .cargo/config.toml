@@ -3,12 +3,3 @@
 rustflags = [
     "--cfg", "getrandom_backend=\"wasm_js\"", 
     "-C", "target-feature=+atomics,+bulk-memory,+mutable-globals,+simd128"]
-
-[dependencies]
-rayon = "1.10"
-tikv-jemallocator = "0.6"
-
-[profile.release]
-codegen-units = 1
-lto = "fat"
-panic = "abort"
