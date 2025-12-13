@@ -6,3 +6,9 @@ rustflags = [
 
 [dependencies]
 rayon = "1.10"
+tikv-jemallocator = "0.6"
+
+[profile.release]
+codegen-units = 1
+lto = "fat"
+panic = "abort"

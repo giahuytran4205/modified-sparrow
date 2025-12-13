@@ -22,6 +22,13 @@ use sparrow::util::svg_exporter::SvgExporter;
 use sparrow::util::ctrlc_terminator::CtrlCTerminator;
 use std::panic;
 
+#[cfg(not(target_env = "msvc"))]
+use tikv_jemallocator::Jemalloc;
+
+#[cfg(not(target_env = "msvc"))]
+#[global_allocator]
+static GLOBAL: Jemalloc = Jemalloc;
+
 pub const OUTPUT_DIR: &str = "output";
 pub const LIVE_DIR: &str = "data/live";
 
@@ -107,7 +114,7 @@ fn main() -> Result<()> {
 
     // --- 5. CẤU HÌNH "FAST CONFIG" CHO PROBE ---
     // Tăng thời gian lên để chống lại Load Average cao của Cloud VM
-    let probe_explore_dur = Duration::from_secs(2); // 45s Explore
+    let probe_explore_dur = Duration::from_secs(4); // 45s Explore
     let probe_compress_dur = Duration::from_secs(2); // 15s Compress
     
     let mut fast_config = config.clone();
@@ -116,6 +123,8 @@ fn main() -> Result<()> {
     // Tắt bớt log để giảm I/O wait
     fast_config.expl_cfg.separator_config.log_level = log::Level::Warn;
     fast_config.cmpr_cfg.separator_config.log_level = log::Level::Warn;
+
+    fast_config.cmpr_cfg.shrink_decay = ShrinkDecayStrategy::FailureBased(0.95);
 
     info!("[SQUARE SEARCH] Range: [{:.2} - {:.2}]", low, high);
 
