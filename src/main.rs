@@ -86,17 +86,16 @@ fn main() -> Result<()> {
     
     // Tính toán cận dưới dựa trên diện tích
     let base_instance = jagua_rs::probs::spp::io::import(&importer, &ext_instance)?;
-    let total_area: f64 = base_instance.items.iter().map(|(item, _)| item.area() as f64).sum();
-    let min_theoretical_side = total_area.sqrt(); 
 
     let n_points= base_instance.item_qty(0) as f32;
     let max_h = (0.7 * n_points).sqrt();
+    let min_h= (0.3 * n_points).sqrt();
 
     info!("Num points: {n_points}");
     
-    info!("[PRE-CALC] Total Area: {:.2}, Min Theoretical Side: {:.2}", total_area, min_theoretical_side);
+    info!("[PRE-CALC] Max height: {max_h:.2}, Min height: {min_h:.2}");
 
-    let mut low = min_theoretical_side as f32; 
+    let mut low = min_h; 
     let mut high = max_h;
     // Đảm bảo high luôn lớn hơn low một chút để thuật toán chạy được
     if high < low { high = low * 1.5; }
@@ -121,7 +120,7 @@ fn main() -> Result<()> {
     info!("[SQUARE SEARCH] Range: [{:.2} - {:.2}]", low, high);
 
     // --- 6. VÒNG LẶP SEQUENTIAL BINARY SEARCH ---
-    while (high - low) > 0.05 { // Độ chính xác dừng 0.05
+    while (high - low) > 0.001 { // Độ chính xác dừng 0.05
         let mid = (low + high) / 2.0;
         let mut success = false;
         
