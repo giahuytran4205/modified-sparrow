@@ -3,6 +3,7 @@ use std::fs;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
+use std::io::Write;
 use serde::{Deserialize, Serialize};
 use svg::Document;
 use anyhow::{Context, Result};
@@ -108,6 +109,21 @@ pub fn write_json(json: &impl Serialize, path: &Path, log_lvl: Level) -> Result<
             .to_str()
             .unwrap()
     );
+    Ok(())
+}
+
+pub fn write_csv(solution: &ExtSPSolution, path: &Path) -> Result<()> {
+    let mut file = File::create(path)?;
+    writeln!(file, "id,x,y,deg")?;
+    let size = solution.layout.placed_items.len();
+    let size_str = format!("{size:0>3}");
+    for (i, item) in solution.layout.placed_items.iter().enumerate() {
+        let x = item.transformation.translation.0;
+        let y = item.transformation.translation.1;
+        let rotation = item.transformation.rotation;
+        writeln!(file, "{size_str}_{i},{x},{y},{rotation}")?;
+    }
+
     Ok(())
 }
 
