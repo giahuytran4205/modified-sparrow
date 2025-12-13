@@ -60,6 +60,10 @@ fn main() -> Result<()>{
         config.rng_seed = Some(arg_rng_seed as usize);
     }
 
+    let cpu_cores = std::thread::available_parallelism().unwrap().get();
+    config.expl_cfg.separator_config.n_workers = cpu_cores;
+    config.cmpr_cfg.separator_config.n_workers = cpu_cores;
+
     info!("[MAIN] configured to explore for {}s and compress for {}s", explore_dur.as_secs(), compress_dur.as_secs());
 
     let rng = match config.rng_seed {
