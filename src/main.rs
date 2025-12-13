@@ -126,7 +126,7 @@ fn main() -> Result<()> {
         let mut success = false;
         
         // Số lần thử lại tại mỗi kích thước (Tăng lên 7 vì máy lag)
-        const MAX_ATTEMPTS: usize = 7; 
+        const MAX_ATTEMPTS: usize = 20; 
         
         info!("\n=== Testing D = {:.2} (Max {} attempts) ===", mid, MAX_ATTEMPTS);
 
