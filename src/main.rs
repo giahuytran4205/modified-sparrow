@@ -187,6 +187,75 @@ fn main() -> Result<()> {
         }
     }
 
+    info!("\n=== 6.5. LINEAR SQUEEZE (Vắt kiệt kết quả) ===");
+    info!("Binary Search stopped at {:.2}. Trying to squeeze further...", best_strip_height);
+
+    // Chiến thuật: Giảm dần độ cao từng chút một cho đến khi thất bại hoàn toàn
+    let mut squeeze_step = best_strip_height * 0.01; // Bước giảm 1%
+    let min_step = 0.1; // Độ chính xác tối thiểu
+    
+    // Config cho giai đoạn vắt kiệt: Cần lì lợm hơn
+    let mut squeeze_config = fast_config.clone();
+    squeeze_config.expl_cfg.time_limit = Duration::from_secs(10); // Tăng thời gian lên 10s
+    squeeze_config.cmpr_cfg.time_limit = Duration::from_secs(5);
+
+    loop {
+        if squeeze_step < min_step { break; }
+        
+        let target_h = best_strip_height - squeeze_step;
+        if target_h < low { break; } // Không xuống thấp hơn cận dưới lý thuyết
+
+        info!("-> Squeezing: Testing H = {:.2} (Step {:.2})", target_h, squeeze_step);
+        
+        let mut success = false;
+        // Tăng số lần thử lên cao (ví dụ 10 lần) để chắc chắn không bỏ sót
+        const SQUEEZE_ATTEMPTS: usize = 10; 
+
+        for attempt in 0..SQUEEZE_ATTEMPTS {
+            let current_seed = master_seed.wrapping_add(attempt as u64 * 5555 + 123);
+            let rng = Xoshiro256PlusPlus::seed_from_u64(current_seed);
+            
+            let mut current_ext_instance = ext_instance.clone();
+            current_ext_instance.strip_height = target_h;
+
+            if let Ok(instance) = jagua_rs::probs::spp::io::import(&importer, &current_ext_instance) {
+                let mut no_svg = SvgExporter::new(None, None, None); 
+                
+                let run_result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
+                    optimize(
+                        instance.clone(), rng, &mut no_svg, 
+                        &mut ctrlc_terminator, 
+                        &squeeze_config.expl_cfg, &squeeze_config.cmpr_cfg
+                    )
+                }));
+
+                if let Ok(solution) = run_result {
+                    let w = solution.strip_width();
+                    if w <= target_h {
+                        info!("   [Squeeze Success] Fits in {:.2}!", target_h);
+                        
+                        best_strip_height = target_h;
+                        best_solution = Some(solution);
+                        best_instance_snapshot = current_ext_instance;
+                        
+                        success = true;
+                        break; 
+                    }
+                }
+            }
+        }
+
+        if success {
+            // Nếu thành công, giữ nguyên step để giảm tiếp
+            info!("   -> Good! Going deeper...");
+        } else {
+            // Nếu thất bại, đừng dừng ngay! Hãy giảm bước nhảy nhỏ lại để dò kỹ hơn
+            // Ví dụ: Đang giảm 10 đơn vị không được, thử giảm 5 đơn vị xem sao?
+            info!("   -> Failed at {:.2}. Reducing step size.", target_h);
+            squeeze_step /= 2.0; 
+        }
+    }
+
     // --- 7. FINAL POLISH (CHẠY KỸ LẦN CUỐI) ---
     info!("\n=== FINAL OPTIMIZATION (Using full config) ===");
     info!("Best square side found: {}. Refining...", best_strip_height);
