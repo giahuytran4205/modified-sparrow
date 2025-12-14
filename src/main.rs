@@ -192,7 +192,7 @@ fn main() -> Result<()> {
 
     // Chiến thuật: Giảm dần độ cao từng chút một cho đến khi thất bại hoàn toàn
     let mut squeeze_step = best_strip_height * 0.01; // Bước giảm 1%
-    let min_step = 0.1; // Độ chính xác tối thiểu
+    let min_step = 0.00001; // Độ chính xác tối thiểu
     
     // Config cho giai đoạn vắt kiệt: Cần lì lợm hơn
     let mut squeeze_config = fast_config.clone();
