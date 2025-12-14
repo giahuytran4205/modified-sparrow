@@ -129,7 +129,7 @@ fn main() -> Result<()> {
     info!("[SQUARE SEARCH] Range: [{:.2} - {:.2}]", low, high);
 
     // --- 6. VÒNG LẶP SEQUENTIAL BINARY SEARCH ---
-    while (high - low) > 0.0000001 { // Độ chính xác dừng 0.05
+    while (high - low) > 0.1 { // Độ chính xác dừng 0.05
         let mid = (low + high) / 2.0;
         let mut success = false;
         
@@ -191,7 +191,7 @@ fn main() -> Result<()> {
     info!("Binary Search stopped at {:.2}. Trying to squeeze further...", best_strip_height);
 
     // Chiến thuật: Giảm dần độ cao từng chút một cho đến khi thất bại hoàn toàn
-    let mut squeeze_step = best_strip_height * 0.01; // Bước giảm 1%
+    let mut squeeze_step = best_strip_height * 0.02; // Bước giảm 1%
     let min_step = 0.00001; // Độ chính xác tối thiểu
     
     // Config cho giai đoạn vắt kiệt: Cần lì lợm hơn
@@ -203,7 +203,7 @@ fn main() -> Result<()> {
         if squeeze_step < min_step { break; }
         
         let target_h = best_strip_height - squeeze_step;
-        if target_h < low { break; } // Không xuống thấp hơn cận dưới lý thuyết
+        if target_h < min_h { break; } // Không xuống thấp hơn cận dưới lý thuyết
 
         info!("-> Squeezing: Testing H = {:.2} (Step {:.2})", target_h, squeeze_step);
         
