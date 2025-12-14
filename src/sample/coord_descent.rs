@@ -9,13 +9,13 @@ use std::fmt::Debug;
 #[derive(Clone, Debug, Copy)]
 pub struct CDConfig {
     /// Initial step size for the coordinate descent
-    pub t_step_init: f32,
+    pub t_step_init: f64,
     /// Limit for the step size, below which no more candidates are generated
-    pub t_step_limit: f32,
+    pub t_step_limit: f64,
     /// Initial step size for the rotation wiggle axis
-    pub r_step_init: f32,
+    pub r_step_init: f64,
     /// Limit for the rotation wiggle step size, below which no more candidates are generated
-    pub r_step_limit: f32,
+    pub r_step_limit: f64,
     /// Defines whether the wiggle axis (rotation) is enabled
     pub wiggle: bool,
 }
@@ -70,13 +70,13 @@ struct CoordinateDescent {
     /// The current axis on which new candidates are generated
     pub axis: CDAxis,
     /// The current step size for x and y axes
-    pub t_steps: (f32, f32),
+    pub t_steps: (f64, f64),
     /// The current step size for the rotation wiggle axis
-    pub r_step: f32,
+    pub r_step: f64,
     /// The limit for the step size, below which no more candidates are generated
-    pub t_step_limit: f32,
+    pub t_step_limit: f64,
     /// The limit for the rotation wiggle step size, below which no more candidates are generated
-    pub r_step_limit: f32,
+    pub r_step_limit: f64,
     /// Defines whether the wiggle axis is enabled
     pub wiggle: bool,
 }

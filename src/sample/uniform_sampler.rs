@@ -1,4 +1,4 @@
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 use itertools::Itertools;
 use jagua_rs::geometry::geo_enums::RotationRange;
 use jagua_rs::geometry::geo_traits::TransformableFrom;
@@ -22,9 +22,9 @@ pub struct UniformBBoxSampler {
 
 #[derive(Clone, Debug)]
 struct RotEntry {
-    pub r: f32,
-    pub x_range: Range<f32>,
-    pub y_range: Range<f32>,
+    pub r: f64,
+    pub x_range: Range<f64>,
+    pub y_range: Range<f64>,
 }
 
 impl UniformBBoxSampler {
@@ -84,9 +84,9 @@ impl UniformBBoxSampler {
     }
 }
 
-fn intersect_range(a: &Range<f32>, b: &Range<f32>) -> Range<f32> {
-    let min = f32::max(a.start, b.start);
-    let max = f32::min(a.end, b.end);
+fn intersect_range(a: &Range<f64>, b: &Range<f64>) -> Range<f64> {
+    let min = f64::max(a.start, b.start);
+    let max = f64::min(a.end, b.end);
     min..max
 }
 

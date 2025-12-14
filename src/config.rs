@@ -15,30 +15,30 @@ pub struct SparrowConfig {
     /// Defines the polygon simplification tolerance: maximum allowable inflation of items when simplifying their shape.
     /// Disabled if `None`.
     /// See [`jagua_rs::io::parser::Parser::new`] for more details.
-    pub poly_simpl_tolerance: Option<f32>,
+    pub poly_simpl_tolerance: Option<f64>,
     /// Defines the minimum distance between items and other hazards.
     /// Disabled if `None`.
     /// See [`jagua_rs::io::parser::Parser::new`] for more details.
-    pub min_item_separation: Option<f32>,
+    pub min_item_separation: Option<f64>,
     /// Defines the maximum distance between two vertices of a polygon to consider it a narrow concavity (which will be closed).
     /// Disabled if `None`.
     /// See [`jagua_rs::io::parser::Parser::new`] for more details.
-    pub narrow_concavity_cutoff_ratio: Option<f32>,
+    pub narrow_concavity_cutoff_ratio: Option<f64>,
 }
 
 #[derive(Debug, Clone, Copy)]
 pub struct ExplorationConfig {
-    pub shrink_step: f32,
+    pub shrink_step: f64,
     pub time_limit: Duration,
     pub max_conseq_failed_attempts: Option<usize>,
-    pub solution_pool_distribution_stddev: f32,
+    pub solution_pool_distribution_stddev: f64,
     pub separator_config: SeparatorConfig,
-    pub large_item_ch_area_cutoff_percentile: f32
+    pub large_item_ch_area_cutoff_percentile: f64
 }
 
 #[derive(Debug, Clone, Copy)]
 pub struct CompressionConfig {
-    pub shrink_range: (f32, f32),
+    pub shrink_range: (f64, f64),
     pub time_limit: Duration,
     pub shrink_decay: ShrinkDecayStrategy,
     pub separator_config: SeparatorConfig,
@@ -49,7 +49,7 @@ pub enum ShrinkDecayStrategy {
     /// The shrink ratio decays linearly with time
     TimeBased,
     /// The shrink ratio decays by a fixed ratio every time it fails to compress into a feasible solution
-    FailureBased(f32),
+    FailureBased(f64),
 }
 
 pub const DEFAULT_SPARROW_CONFIG: SparrowConfig = SparrowConfig {

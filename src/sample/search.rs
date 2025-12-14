@@ -18,7 +18,7 @@ pub struct SampleConfig {
 
 /// Algorithm 6 and Figure 7 from https://doi.org/10.48550/arXiv.2509.13329
 pub fn search_placement(l: &Layout, item: &Item, ref_pk: Option<PItemKey>, mut evaluator: impl SampleEvaluator, sample_config: SampleConfig, rng: &mut impl Rng) -> (Option<(DTransformation, SampleEval)>, usize) {
-    let item_min_dim = f32::min(item.shape_cd.bbox.width(), item.shape_cd.bbox.height());
+    let item_min_dim = f64::min(item.shape_cd.bbox.width(), item.shape_cd.bbox.height());
 
     let mut best_samples = BestSamples::new(sample_config.n_coord_descents, item_min_dim * UNIQUE_SAMPLE_THRESHOLD);
 
@@ -83,7 +83,7 @@ pub fn search_placement(l: &Layout, item: &Item, ref_pk: Option<PItemKey>, mut e
 }
 
 fn prerefine_cd_config(item: &Item) -> CDConfig {
-    let item_min_dim = f32::min(item.shape_cd.bbox.width(), item.shape_cd.bbox.height());
+    let item_min_dim = f64::min(item.shape_cd.bbox.width(), item.shape_cd.bbox.height());
     let wiggle = item.allowed_rotation == RotationRange::Continuous;
     CDConfig {
         t_step_init: item_min_dim * PRE_REFINE_CD_TL_RATIOS.0,
@@ -95,7 +95,7 @@ fn prerefine_cd_config(item: &Item) -> CDConfig {
 }
 
 fn final_refine_cd_config(item: &Item) -> CDConfig {
-    let item_min_dim = f32::min(item.shape_cd.bbox.width(), item.shape_cd.bbox.height());
+    let item_min_dim = f64::min(item.shape_cd.bbox.width(), item.shape_cd.bbox.height());
     let wiggle = item.allowed_rotation == RotationRange::Continuous;
     CDConfig {
         t_step_init: item_min_dim * SND_REFINE_CD_TL_RATIOS.0,

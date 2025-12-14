@@ -46,7 +46,7 @@ impl<'a> SampleEvaluator for SeparationEvaluator<'a> {
         let loss_bound = match upper_bound {
             Some(SampleEval::Collision { loss }) => loss,
             Some(SampleEval::Clear { .. }) => 0.0,
-            _ => f32::INFINITY,
+            _ => f64::INFINITY,
         };
         //reload the hazard collector to prepare for a new query
         self.collector.reload(loss_bound);

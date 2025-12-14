@@ -7,8 +7,8 @@ use SampleEval::{Clear, Collision, Invalid};
 #[derive(Clone, Debug, PartialEq, Copy)]
 pub enum SampleEval {
     /// No collisions occur
-    Clear { loss: f32 },
-    Collision{ loss: f32 },
+    Clear { loss: f64 },
+    Collision{ loss: f64 },
     Invalid,
 }
 

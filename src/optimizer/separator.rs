@@ -129,12 +129,12 @@ impl Separator {
             }
             self.rollback(&min_loss_sol.0, Some(&min_loss_sol.1));
         }
-        let secs = start.elapsed().as_secs_f32();
+        let secs = start.elapsed().as_secs_f64();
         log!(self.config.log_level, "[SEP] finished, evals/s: {} K, evals/move: {}, moves/s: {}, iter/s: {}, #workers: {}, total {:.3}s",
-            (sep_stats.total_evals as f32/ (1000.0 * secs)) as usize,
-            FMT().fmt2(sep_stats.total_evals as f32 / sep_stats.total_moves as f32),
-            FMT().fmt2(sep_stats.total_moves as f32 / secs),
-            FMT().fmt2(n_iter as f32 / secs),
+            (sep_stats.total_evals as f64/ (1000.0 * secs)) as usize,
+            FMT().fmt2(sep_stats.total_evals as f64 / sep_stats.total_moves as f64),
+            FMT().fmt2(sep_stats.total_moves as f64 / secs),
+            FMT().fmt2(n_iter as f64 / secs),
             self.workers.len(),
             FMT().fmt2(secs),
         );
@@ -218,7 +218,7 @@ impl Separator {
         new_pk
     }
 
-    pub fn change_strip_width(&mut self, new_width: f32, split_position: Option<f32>) {
+    pub fn change_strip_width(&mut self, new_width: f64, split_position: Option<f64>) {
         //if no split position is provided, use the center of the strip
         let split_position = split_position.unwrap_or(self.prob.strip_width() / 2.0);
         let delta = new_width - self.prob.strip_width();

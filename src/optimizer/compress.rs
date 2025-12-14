@@ -20,12 +20,12 @@ pub fn compression_phase(
     let start = Instant::now();
     let mut n_failed_attempts = 0;
 
-    let shrink_step_size = |n_failed_attempts: i32| -> f32 {
+    let shrink_step_size = |n_failed_attempts: i32| -> f64 {
         match config.shrink_decay {
             ShrinkDecayStrategy::TimeBased => {
                 let range = config.shrink_range.1 - config.shrink_range.0;
                 let elapsed = start.elapsed();
-                let ratio = elapsed.as_secs_f32() / config.time_limit.as_secs_f32();
+                let ratio = elapsed.as_secs_f64() / config.time_limit.as_secs_f64();
                 config.shrink_range.0 + ratio * range
             }
             ShrinkDecayStrategy::FailureBased(r) => {
@@ -51,7 +51,7 @@ pub fn compression_phase(
 }
 
 
-fn attempt_to_compress(sep: &mut Separator, init: &SPSolution, r_shrink: f32, term: &impl Terminator, sol_listener: &mut impl SolutionListener) -> Option<SPSolution> {
+fn attempt_to_compress(sep: &mut Separator, init: &SPSolution, r_shrink: f64, term: &impl Terminator, sol_listener: &mut impl SolutionListener) -> Option<SPSolution> {
     //restore to the initial solution and width
     sep.change_strip_width(init.strip_width(), None);
     sep.rollback(&init, None);

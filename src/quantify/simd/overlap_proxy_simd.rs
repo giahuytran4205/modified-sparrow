@@ -5,32 +5,32 @@ use std::simd::Simd;
 use jagua_rs::geometry::fail_fast::SPSurrogate;
 use jagua_rs::geometry::geo_traits::DistanceTo;
 use jagua_rs::geometry::primitives::{Circle, Point};
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 
 /// Width of the SIMD vector
 const SIMD_WIDTH: usize = 4;
 
 #[allow(non_camel_case_types)]
-type f32xN = Simd<f32,SIMD_WIDTH>;
+type f64xN = Simd<f64,SIMD_WIDTH>;
 
 /// SIMD version of [`poles_overlap_area_proxy`] with configurable vector width.
 /// `p2` should match the poles of `sp2`.
 #[inline(always)]
-pub fn poles_overlap_area_proxy_simd(sp1: &SPSurrogate, sp2: &SPSurrogate, epsilon: f32, p2: &CirclesSoA) -> f32 {
+pub fn poles_overlap_area_proxy_simd(sp1: &SPSurrogate, sp2: &SPSurrogate, epsilon: f64, p2: &CirclesSoA) -> f64 {
     use std::simd::prelude::{SimdFloat, SimdPartialOrd};
     use std::simd::StdFloat;
 
-    let e_n = f32xN::splat(epsilon);
-    let e_sq_n = f32xN::splat(epsilon * epsilon);
-    let two_e_n = f32xN::splat(2.0 * epsilon);
+    let e_n = f64xN::splat(epsilon);
+    let e_sq_n = f64xN::splat(epsilon * epsilon);
+    let two_e_n = f64xN::splat(2.0 * epsilon);
 
     let mut total_overlap = 0.0;
     for p1 in sp1.poles.iter() {
         //common values for all chunks
         let r1 = p1.radius;
-        let x1_n = f32xN::splat(p1.center.x());
-        let y1_n = f32xN::splat(p1.center.y());
-        let r1_n = f32xN::splat(r1);
+        let x1_n = f64xN::splat(p1.center.x());
+        let y1_n = f64xN::splat(p1.center.y());
+        let r1_n = f64xN::splat(r1);
 
         //process complete chunks with SIMD
         let chunks = p2.x.len() / SIMD_WIDTH;
@@ -39,9 +39,9 @@ pub fn poles_overlap_area_proxy_simd(sp1: &SPSurrogate, sp2: &SPSurrogate, epsil
             let idx = chunk * SIMD_WIDTH;
 
             // load the next N elements from p2
-            let x2 = f32xN::from_slice(&p2.x[idx..idx + SIMD_WIDTH]);
-            let y2 = f32xN::from_slice(&p2.y[idx..idx + SIMD_WIDTH]);
-            let r2 = f32xN::from_slice(&p2.r[idx..idx + SIMD_WIDTH]);
+            let x2 = f64xN::from_slice(&p2.x[idx..idx + SIMD_WIDTH]);
+            let y2 = f64xN::from_slice(&p2.y[idx..idx + SIMD_WIDTH]);
+            let r2 = f64xN::from_slice(&p2.r[idx..idx + SIMD_WIDTH]);
 
             // calculate pd
             let dx = x1_n - x2;
@@ -76,14 +76,14 @@ pub fn poles_overlap_area_proxy_simd(sp1: &SPSurrogate, sp2: &SPSurrogate, epsil
                 false => epsilon.powi(2) / (-pd + 2.0 * epsilon),
             };
 
-            total_overlap += pd_decay * f32::min(p1.radius, p2.radius);
+            total_overlap += pd_decay * f64::min(p1.radius, p2.radius);
         }
     }
     
     total_overlap *= PI;
 
     debug_assert!(
-        approx_eq!(f32, total_overlap, overlap_area_proxy(sp1, sp2, epsilon),
+        approx_eq!(f64, total_overlap, overlap_area_proxy(sp1, sp2, epsilon),
                  epsilon = total_overlap * 1e-3),
                   "SIMD and SEQ results do not match: {} vs {}", total_overlap,
                   overlap_area_proxy(sp1, sp2, epsilon)

@@ -28,7 +28,7 @@ pub fn tracker_matches_layout(ct: &CollisionTracker, l: &Layout) -> bool {
                 true => {
                     let calc_loss = quantify_collision_poly_poly(&pi1.shape, &pi2.shape);
                     let calc_loss_r = quantify_collision_poly_poly(&pi2.shape, &pi1.shape);
-                    if !approx_eq!(f32,calc_loss,stored_loss,epsilon = 0.10 * stored_loss) && !approx_eq!(f32,calc_loss_r,stored_loss, epsilon = 0.10 * stored_loss) {
+                    if !approx_eq!(f64,calc_loss,stored_loss,epsilon = 0.10 * stored_loss) && !approx_eq!(f64,calc_loss_r,stored_loss, epsilon = 0.10 * stored_loss) {
                         let mut opp_collector = BasicHazardCollector::new();
                         l.cde().collect_poly_collisions(&pi2.shape, &mut opp_collector);
                         opp_collector.remove_by_entity(&HazardEntity::from((pk2, pi2)));
@@ -114,7 +114,7 @@ pub fn tracker_matches_layout(ct: &CollisionTracker, l: &Layout) -> bool {
         if collector.contains_entity(&HazardEntity::Exterior) {
             let stored_loss = ct.get_container_loss(pk1);
             let calc_loss = quantify_collision_poly_container(&pi1.shape, l.container.outer_cd.bbox);
-            assert_approx_eq!(f32, stored_loss, calc_loss, ulps = 5);
+            assert_approx_eq!(f64, stored_loss, calc_loss, ulps = 5);
         } else {
             assert_eq!(ct.get_container_loss(pk1), 0.0);
         }
@@ -147,8 +147,8 @@ pub fn custom_pipeline_matches_jaguars(shape: &SPolygon, det: &SpecializedHazard
 
 pub fn strip_width_is_in_check(prob: &SPProblem) -> bool {
     let diameters_of_all_items = prob.instance.items.iter().map(
-        |(i,q)| i.shape_cd.diameter * *q as f32
-    ).sum::<f32>();
+        |(i,q)| i.shape_cd.diameter * *q as f64
+    ).sum::<f64>();
     
     prob.strip_width() < 2.0 * (diameters_of_all_items)
 }

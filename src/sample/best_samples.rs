@@ -1,7 +1,7 @@
 use crate::eval::sample_eval::SampleEval;
 use itertools::Itertools;
 use jagua_rs::geometry::DTransformation;
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 use std::fmt::Debug;
 
 /// Datastructure to store the N best samples, automatically keeps them sorted and evicts the worst.
@@ -10,11 +10,11 @@ use std::fmt::Debug;
 pub struct BestSamples {
     pub size: usize,
     pub samples: Vec<(DTransformation, SampleEval)>,
-    pub unique_thresh: f32,
+    pub unique_thresh: f64,
 }
 
 impl BestSamples {
-    pub fn new(size: usize, unique_thresh: f32) -> Self {
+    pub fn new(size: usize, unique_thresh: f64) -> Self {
         Self {
             size,
             samples: vec![],
@@ -89,17 +89,17 @@ impl BestSamples {
 pub fn dtransfs_are_similar(
     dt1: DTransformation,
     dt2: DTransformation,
-    x_threshold: f32,
-    y_threshold: f32,
+    x_threshold: f64,
+    y_threshold: f64,
 ) -> bool {
-    let x_diff = f32::abs(dt1.translation().0 - dt2.translation().0);
-    let y_diff = f32::abs(dt1.translation().1 - dt2.translation().1);
+    let x_diff = f64::abs(dt1.translation().0 - dt2.translation().0);
+    let y_diff = f64::abs(dt1.translation().1 - dt2.translation().1);
 
     if x_diff < x_threshold && y_diff < y_threshold {
         let r1 = dt1.rotation() % 2.0 * PI;
         let r2 = dt2.rotation() % 2.0 * PI;
-        let angle_diff = f32::abs(r1 - r2);
-        angle_diff < (1.0f32).to_radians()
+        let angle_diff = f64::abs(r1 - r2);
+        angle_diff < (1.0f64).to_radians()
     } else {
         false
     }

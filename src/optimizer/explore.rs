@@ -27,7 +27,7 @@ pub fn exploration_phase(instance: &SPInstance, sep: &mut Separator, sol_listene
     sol_listener.report(ReportType::ExplFeas, &feasible_solutions[0], instance);
     info!("[EXPL] starting optimization with initial width: {:.3} ({:.3}%)",current_width,sep.prob.density() * 100.0);
 
-    let mut solution_pool: Vec<(SPSolution, f32)> = vec![];
+    let mut solution_pool: Vec<(SPSolution, f64)> = vec![];
 
     while !term.kill() {
         let local_best = sep.separate(term, sol_listener);
@@ -66,7 +66,7 @@ pub fn exploration_phase(instance: &SPInstance, sep: &mut Separator, sol_listene
                 let distr = Normal::new(0.0, config.solution_pool_distribution_stddev).unwrap();
                 let sample = distr.sample(&mut sep.rng).abs().min(0.999);
                 //map it to the range of the solution pool
-                let selected_idx = (sample * solution_pool.len() as f32) as usize;
+                let selected_idx = (sample * solution_pool.len() as f64) as usize;
 
                 let (selected_sol, loss) = &solution_pool[selected_idx];
                 info!("[EXPL] starting solution {}/{} selected from solution pool (l: {}) to disrupt", selected_idx, solution_pool.len(), FMT().fmt2(*loss));
@@ -96,12 +96,12 @@ fn disrupt_solution(sep: &mut Separator, config: &ExplorationConfig) {
     // Step 1: Define what constitutes a 'large' item.
 
     // Calculate the total convex hull area of all items, considering quantities.
-    let total_convex_hull_area: f32 = sep
+    let total_convex_hull_area: f64 = sep
         .prob
         .instance
         .items
         .iter()
-        .map(|(item, quantity)| item.shape_cd.surrogate().convex_hull_area * (*quantity as f32))
+        .map(|(item, quantity)| item.shape_cd.surrogate().convex_hull_area * (*quantity as f64))
         .sum();
 
     let cutoff_threshold_area = total_convex_hull_area * config.large_item_ch_area_cutoff_percentile;
@@ -123,7 +123,7 @@ fn disrupt_solution(sep: &mut Separator, config: &ExplorationConfig) {
     // this excess becomes the ch_area_cutoff.
     for (item, quantity) in sorted_items_by_ch_area {
         let item_ch_area = item.shape_cd.surrogate().convex_hull_area;
-        cumulative_ch_area += item_ch_area * (*quantity as f32);
+        cumulative_ch_area += item_ch_area * (*quantity as f64);
         if cumulative_ch_area > cutoff_threshold_area {
             ch_area_cutoff = item_ch_area;
             debug!("[DSRP] cutoff ch area: {}, for item id: {}, bbox: {:?}",ch_area_cutoff, item.id, item.shape_cd.bbox);
@@ -144,8 +144,8 @@ fn disrupt_solution(sep: &mut Separator, config: &ExplorationConfig) {
     let (pk2, pi2) = large_items.clone()
         .filter(|(_, pi)|
             // Ensure the second item is different from the first
-            !approx_eq!(f32, pi.shape.area,pi1.shape.area, epsilon = pi1.shape.area * 0.01) &&
-                !approx_eq!(f32, pi.shape.diameter, pi1.shape.diameter, epsilon = pi1.shape.diameter * 0.01)
+            !approx_eq!(f64, pi.shape.area,pi1.shape.area, epsilon = pi1.shape.area * 0.01) &&
+                !approx_eq!(f64, pi.shape.diameter, pi1.shape.diameter, epsilon = pi1.shape.diameter * 0.01)
         )
         .choose(&mut sep.rng)
         .or_else(|| {

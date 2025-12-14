@@ -6,9 +6,9 @@ use jagua_rs::geometry::primitives::Circle;
 #[derive(Debug, Clone)]
 #[repr(align(32))]
 pub struct CirclesSoA {
-    pub x: Vec<f32>,
-    pub y: Vec<f32>,
-    pub r: Vec<f32>,
+    pub x: Vec<f64>,
+    pub y: Vec<f64>,
+    pub r: Vec<f64>,
 }
 
 impl CirclesSoA {

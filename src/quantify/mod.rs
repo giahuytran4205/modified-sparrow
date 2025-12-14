@@ -12,8 +12,8 @@ pub mod simd;
 /// Quantifies a collision between two simple polygons.
 /// Algorithm 4 from https://doi.org/10.48550/arXiv.2509.13329
 #[inline(always)]
-pub fn quantify_collision_poly_poly(s1: &SPolygon, s2: &SPolygon) -> f32 {
-    let epsilon = f32::max(s1.diameter, s2.diameter) * OVERLAP_PROXY_EPSILON_DIAM_RATIO;
+pub fn quantify_collision_poly_poly(s1: &SPolygon, s2: &SPolygon) -> f64 {
+    let epsilon = f64::max(s1.diameter, s2.diameter) * OVERLAP_PROXY_EPSILON_DIAM_RATIO;
 
     let overlap_proxy = overlap_area_proxy(&s1.surrogate(), &s2.surrogate(), epsilon) + epsilon.powi(2);
 
@@ -24,15 +24,15 @@ pub fn quantify_collision_poly_poly(s1: &SPolygon, s2: &SPolygon) -> f32 {
     overlap_proxy.sqrt() * penalty
 }
 
-pub fn calc_shape_penalty(s1: &SPolygon, s2: &SPolygon) -> f32 {
-    let p1 = f32::sqrt(s1.surrogate().convex_hull_area);
-    let p2 = f32::sqrt(s2.surrogate().convex_hull_area);
+pub fn calc_shape_penalty(s1: &SPolygon, s2: &SPolygon) -> f64 {
+    let p1 = f64::sqrt(s1.surrogate().convex_hull_area);
+    let p2 = f64::sqrt(s2.surrogate().convex_hull_area);
     (p1 * p2).sqrt() //geometric mean
 }
 
 /// Quantifies a collision between a simple polygon and the exterior of the container.
 #[inline(always)]
-pub fn quantify_collision_poly_container(s: &SPolygon, c_bbox: Rect) -> f32 {
+pub fn quantify_collision_poly_container(s: &SPolygon, c_bbox: Rect) -> f64 {
     let s_bbox = s.bbox;
     let overlap = match Rect::intersection(s_bbox, c_bbox) {
         Some(r) => {

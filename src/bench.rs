@@ -53,11 +53,11 @@ fn main() -> Result<()> {
         }
     };
 
-    config.expl_cfg.time_limit = time_limit.mul_f32(DEFAULT_EXPLORE_TIME_RATIO);
-    config.cmpr_cfg.time_limit = time_limit.mul_f32(DEFAULT_COMPRESS_TIME_RATIO);
+    config.expl_cfg.time_limit = time_limit.mul_f64(DEFAULT_EXPLORE_TIME_RATIO);
+    config.cmpr_cfg.time_limit = time_limit.mul_f64(DEFAULT_COMPRESS_TIME_RATIO);
 
     let n_runs_per_iter = (num_cpus::get_physical() / config.expl_cfg.separator_config.n_workers).min(n_runs_total);
-    let n_batches = (n_runs_total as f32 / n_runs_per_iter as f32).ceil() as usize;
+    let n_batches = (n_runs_total as f64 / n_runs_per_iter as f64).ceil() as usize;
 
     let ext_instance = io::read_spp_instance_json(Path::new(&input_file_path))?;
 
@@ -100,7 +100,7 @@ fn main() -> Result<()> {
 
                     println!("[BENCH] [id:{:>3}] finished, expl: {:.3}% ({}s), cmpr: {:.3}% (+{:.3}%) ({}s)",
                              bench_idx,
-                             final_explore_sol.density(&instance) * 100.0, time_limit.mul_f32(DEFAULT_EXPLORE_TIME_RATIO).as_secs(),
+                             final_explore_sol.density(&instance) * 100.0, time_limit.mul_f64(DEFAULT_EXPLORE_TIME_RATIO).as_secs(),
                              cmpr_sol.density(&instance) * 100.0,
                              cmpr_sol.density(&instance) * 100.0 - final_explore_sol.density(&instance) * 100.0,
                              start_comp.elapsed().as_secs()
@@ -120,7 +120,7 @@ fn main() -> Result<()> {
     }
 
     //print statistics about the solutions, print best, worst, median and average
-    let (final_widths, final_usages): (Vec<f32>, Vec<f32>) = final_solutions
+    let (final_widths, final_usages): (Vec<f64>, Vec<f64>) = final_solutions
         .iter()
         .map(|s| {
             let width = s.strip_width();
@@ -165,7 +165,7 @@ fn main() -> Result<()> {
 }
 
 
-pub fn calculate_percentile(v: &[f32], pct: f32) -> f32 {
+pub fn calculate_percentile(v: &[f64], pct: f64) -> f64 {
     // Validate input
     assert!(!v.is_empty(), "Cannot compute percentile of an empty slice");
     assert!(
@@ -180,12 +180,12 @@ pub fn calculate_percentile(v: &[f32], pct: f32) -> f32 {
     let n = sorted.len();
     // Compute the rank using Excel's formula (1-indexed):
     // k = pct * (n - 1) + 1
-    let k = pct * (n - 1) as f32 + 1.0;
+    let k = pct * (n - 1) as f64 + 1.0;
 
     // Determine the lower and upper indices (still 1-indexed)
     let lower_index = k.floor() as usize;
     let upper_index = k.ceil() as usize;
-    let fraction = k - (lower_index as f32);
+    let fraction = k - (lower_index as f64);
 
     // Convert indices to 0-indexed by subtracting 1
     let lower_value = sorted[lower_index - 1];
@@ -195,17 +195,17 @@ pub fn calculate_percentile(v: &[f32], pct: f32) -> f32 {
     lower_value + fraction * (upper_value - lower_value)
 }
 
-pub fn calculate_median(v: &[f32]) -> f32 {
+pub fn calculate_median(v: &[f64]) -> f64 {
     calculate_percentile(v, 0.5)
 }
 
-pub fn calculate_average(v: &[f32]) -> f32 {
-    v.iter().sum::<f32>() / v.len() as f32
+pub fn calculate_average(v: &[f64]) -> f64 {
+    v.iter().sum::<f64>() / v.len() as f64
 }
 
-pub fn calculate_stddev(v: &[f32]) -> f32 {
+pub fn calculate_stddev(v: &[f64]) -> f64 {
     let avg = calculate_average(v);
-    (v.iter().map(|x| (x - avg).powi(2)).sum::<f32>() / v.len() as f32).sqrt()
+    (v.iter().map(|x| (x - avg).powi(2)).sum::<f64>() / v.len() as f64).sqrt()
 }
 
 pub fn get_git_commit_hash() -> String {

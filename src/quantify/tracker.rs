@@ -126,65 +126,65 @@ impl CollisionTracker {
         }
     }
 
-    pub fn get_pair_weight(&self, pk1: PItemKey, pk2: PItemKey) -> f32 {
+    pub fn get_pair_weight(&self, pk1: PItemKey, pk2: PItemKey) -> f64 {
         let (idx1, idx2) = (self.pk_idx_map[pk1], self.pk_idx_map[pk2]);
         self.pair_collisions[(idx1, idx2)].weight
     }
 
-    pub fn get_container_weight(&self, pk: PItemKey) -> f32 {
+    pub fn get_container_weight(&self, pk: PItemKey) -> f64 {
         let idx = self.pk_idx_map[pk];
         self.container_collisions[idx].weight
     }
 
     /// Algorithm 1 from https://doi.org/10.48550/arXiv.2509.13329
-    pub fn get_pair_loss(&self, pk1: PItemKey, pk2: PItemKey) -> f32 {
+    pub fn get_pair_loss(&self, pk1: PItemKey, pk2: PItemKey) -> f64 {
         let (idx1, idx2) = (self.pk_idx_map[pk1], self.pk_idx_map[pk2]);
         self.pair_collisions[(idx1, idx2)].loss
     }
 
-    pub fn get_container_loss(&self, pk: PItemKey) -> f32 {
+    pub fn get_container_loss(&self, pk: PItemKey) -> f64 {
         let idx = self.pk_idx_map[pk];
         self.container_collisions[idx].loss
     }
 
-    pub fn get_loss(&self, pk: PItemKey) -> f32 {
+    pub fn get_loss(&self, pk: PItemKey) -> f64 {
         let idx = self.pk_idx_map[pk];
 
         let pair_loss = (0..self.size)
             .map(|i| self.pair_collisions[(idx, i)].loss)
-            .sum::<f32>();
+            .sum::<f64>();
 
         self.container_collisions[idx].loss + pair_loss
     }
 
-    pub fn get_weighted_loss(&self, pk: PItemKey) -> f32 {
+    pub fn get_weighted_loss(&self, pk: PItemKey) -> f64 {
         let idx = self.pk_idx_map[pk];
 
         let w_pair_loss = (0..self.size)
             .map(|i| self.pair_collisions[(idx, i)].weighted_loss())
-            .sum::<f32>();
+            .sum::<f64>();
 
         self.container_collisions[idx].weighted_loss() + w_pair_loss
     }
 
-    pub fn get_total_loss(&self) -> f32 {
-        let cont_o = self.container_collisions.iter().map(|e| e.loss).sum::<f32>();
+    pub fn get_total_loss(&self) -> f64 {
+        let cont_o = self.container_collisions.iter().map(|e| e.loss).sum::<f64>();
 
         let pair_o = self.pair_collisions.data.iter()
             .map(|e| e.loss)
-            .sum::<f32>();
+            .sum::<f64>();
 
         cont_o + pair_o
     }
 
-    pub fn get_total_weighted_loss(&self) -> f32 {
+    pub fn get_total_weighted_loss(&self) -> f64 {
         let cont_w_o = self.container_collisions.iter()
             .map(|e| e.weighted_loss())
-            .sum::<f32>();
+            .sum::<f64>();
 
         let pair_w_o = self.pair_collisions.data.iter()
             .map(|e| e.weighted_loss())
-            .sum::<f32>();
+            .sum::<f64>();
 
         cont_w_o + pair_w_o
     }
@@ -192,12 +192,12 @@ impl CollisionTracker {
 
 #[derive(Debug, Clone, Copy)]
 pub struct CTEntry {
-    pub loss: f32,
-    pub weight: f32,
+    pub loss: f64,
+    pub weight: f64,
 }
 
 impl CTEntry {
-    pub fn weighted_loss(&self) -> f32 {
+    pub fn weighted_loss(&self) -> f64 {
         self.weight * self.loss
     }
 }

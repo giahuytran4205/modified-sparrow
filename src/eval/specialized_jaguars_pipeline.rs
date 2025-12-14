@@ -1,4 +1,4 @@
-use std::f32::consts::PI;
+use std::f64::consts::PI;
 use crate::quantify::quantify_collision_poly_container;
 #[cfg(not(feature = "simd"))]
 use crate::quantify::quantify_collision_poly_poly;
@@ -98,8 +98,8 @@ pub struct SpecializedHazardCollector<'a> {
     pub current_haz_key: HazKey,
     pub detected: SecondaryMap<HazKey, (HazardEntity, usize)>,
     pub idx_counter: usize,
-    pub loss_cache: (usize, f32),
-    pub loss_bound: f32,
+    pub loss_cache: (usize, f64),
+    pub loss_bound: f64,
     #[cfg(feature = "simd")]
     pub poles_soa: CirclesSoA,
 }
@@ -119,13 +119,13 @@ impl<'a> SpecializedHazardCollector<'a> {
             detected: SecondaryMap::with_capacity(layout.placed_items.len() + 1),
             idx_counter: 0,
             loss_cache: (0, 0.0),
-            loss_bound: f32::INFINITY,
+            loss_bound: f64::INFINITY,
             #[cfg(feature = "simd")]
             poles_soa: CirclesSoA::new(),
         }
     }
 
-    pub fn reload(&mut self, loss_bound: f32) {
+    pub fn reload(&mut self, loss_bound: f64) {
         self.detected.clear();
         self.idx_counter = 0;
         self.loss_cache = (0, 0.0);
@@ -140,21 +140,21 @@ impl<'a> SpecializedHazardCollector<'a> {
         self.loss(shape) > self.loss_bound
     }
 
-    pub fn loss(&mut self, shape: &SPolygon) -> f32 {
+    pub fn loss(&mut self, shape: &SPolygon) -> f64 {
         let (cache_idx, cached_loss) = self.loss_cache;
         if cache_idx < self.idx_counter {
             // additional hazards were detected, update the cache
-            let extra_loss: f32 = self.iter_with_index()
+            let extra_loss: f64 = self.iter_with_index()
                 .filter(|(_, idx)| *idx >= cache_idx)
                 .map(|(h, _)| self.calc_weighted_loss(h, shape))
                 .sum();
             self.loss_cache = (self.idx_counter, cached_loss + extra_loss);
         }
-        debug_assert!(approx_eq!(f32, self.loss_cache.1, self.iter().map(|(_, he)| self.calc_weighted_loss(he, shape)).sum()));
+        debug_assert!(approx_eq!(f64, self.loss_cache.1, self.iter().map(|(_, he)| self.calc_weighted_loss(he, shape)).sum()));
         self.loss_cache.1
     }
 
-    fn calc_weighted_loss(&self, haz: &HazardEntity, shape: &SPolygon) -> f32 {
+    fn calc_weighted_loss(&self, haz: &HazardEntity, shape: &SPolygon) -> f64 {
         match haz {
             HazardEntity::PlacedItem { pk: other_pk, .. } => {
                 let other_shape = &self.layout.placed_items[*other_pk].shape;

@@ -53,9 +53,9 @@ fn main() -> Result<()> {
 
     // --- 2. XỬ LÝ TIME LIMIT (CHO BƯỚC FINAL POLISH) ---
     let (explore_dur, compress_dur) = match (args.global_time, args.exploration, args.compression) {
-        (Some(gt), None, None) => (Duration::from_secs(gt).mul_f32(DEFAULT_EXPLORE_TIME_RATIO), Duration::from_secs(gt).mul_f32(DEFAULT_COMPRESS_TIME_RATIO)),
+        (Some(gt), None, None) => (Duration::from_secs(gt).mul_f64(DEFAULT_EXPLORE_TIME_RATIO), Duration::from_secs(gt).mul_f64(DEFAULT_COMPRESS_TIME_RATIO)),
         (None, Some(et), Some(ct)) => (Duration::from_secs(et), Duration::from_secs(ct)),
-        (None, None, None) => (Duration::from_secs(600).mul_f32(DEFAULT_EXPLORE_TIME_RATIO), Duration::from_secs(600).mul_f32(DEFAULT_COMPRESS_TIME_RATIO)),
+        (None, None, None) => (Duration::from_secs(600).mul_f64(DEFAULT_EXPLORE_TIME_RATIO), Duration::from_secs(600).mul_f64(DEFAULT_COMPRESS_TIME_RATIO)),
         _ => bail!("invalid cli pattern"),
     };
     
@@ -94,7 +94,7 @@ fn main() -> Result<()> {
     // Tính toán cận dưới dựa trên diện tích
     let base_instance = jagua_rs::probs::spp::io::import(&importer, &ext_instance)?;
 
-    let n_points= base_instance.item_qty(0) as f32;
+    let n_points= base_instance.item_qty(0) as f64;
     let max_h = (0.7 * n_points).sqrt();
     let min_h= (0.3 * n_points).sqrt();
 
@@ -129,7 +129,7 @@ fn main() -> Result<()> {
     info!("[SQUARE SEARCH] Range: [{:.2} - {:.2}]", low, high);
 
     // --- 6. VÒNG LẶP SEQUENTIAL BINARY SEARCH ---
-    while (high - low) > 0.00001 { // Độ chính xác dừng 0.05
+    while (high - low) > 0.0000001 { // Độ chính xác dừng 0.05
         let mid = (low + high) / 2.0;
         let mut success = false;
         

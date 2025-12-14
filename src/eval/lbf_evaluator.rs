@@ -6,8 +6,8 @@ use jagua_rs::geometry::DTransformation;
 use jagua_rs::geometry::geo_traits::TransformableFrom;
 use jagua_rs::geometry::primitives::SPolygon;
 
-pub const X_MULTIPLIER: f32 = 10.0;
-pub const Y_MULTIPLIER: f32 = 1.0;
+pub const X_MULTIPLIER: f64 = 10.0;
+pub const Y_MULTIPLIER: f64 = 1.0;
 
 /// Simple evaluator for the Left-Bottom-Fill constructor.
 /// Basically either returns [SampleEval::Invalid] in case of any collision or [SampleEval::Clear] with a loss value

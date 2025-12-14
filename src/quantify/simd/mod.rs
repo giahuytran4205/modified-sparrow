@@ -11,8 +11,8 @@ pub mod overlap_proxy_simd;
 /// Quantifies a collision between two simple polygons using SIMD.
 /// Mirrors the functionality of `quantify_collision_poly_poly` but leverages SIMD instructions.
 #[inline(always)]
-pub fn quantify_collision_poly_poly_simd(s1: &SPolygon, s2: &SPolygon, poles2: &CirclesSoA) -> f32 {
-    let epsilon = f32::max(s1.diameter, s2.diameter) * OVERLAP_PROXY_EPSILON_DIAM_RATIO;
+pub fn quantify_collision_poly_poly_simd(s1: &SPolygon, s2: &SPolygon, poles2: &CirclesSoA) -> f64 {
+    let epsilon = f64::max(s1.diameter, s2.diameter) * OVERLAP_PROXY_EPSILON_DIAM_RATIO;
 
     let overlap_proxy = poles_overlap_area_proxy_simd(&s1.surrogate(), &s2.surrogate(), epsilon, poles2) + epsilon.powi(2);
 
