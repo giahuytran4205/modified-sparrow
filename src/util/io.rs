@@ -121,7 +121,7 @@ pub fn write_csv(solution: &ExtSPSolution, path: &Path) -> Result<()> {
         let x = item.transformation.translation.0;
         let y = item.transformation.translation.1;
         let rotation = item.transformation.rotation;
-        writeln!(file, "{size_str}_{i},{x},{y},{rotation}")?;
+        writeln!(file, "{size_str}_{i},s{x},s{y},s{rotation}")?;
     }
 
     Ok(())
