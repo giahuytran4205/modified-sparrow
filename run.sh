@@ -1,1 +1,1 @@
-cargo run --release --features=only_final_svg -- -i a.json -n 5
+cargo run --release --features=only_final_svg -- -i a.json --start_qty 5 --end_qty 5
