@@ -52,8 +52,6 @@ pub struct BatchCli {
     #[clap(long, default_value = "1")]
     pub step_qty: usize,
 
-    // Đã bỏ parallel_tasks
-
     /// Ép cứng số core (nếu không muốn dùng hết 100% CPU)
     #[clap(long)]
     pub force_cores: Option<usize>,
@@ -76,7 +74,7 @@ fn main() -> Result<()> {
     // Vì chạy tuần tự, ta dùng toàn bộ số core cho task hiện tại
     let n_workers = args.force_cores.unwrap_or(total_cpu_cores);
     
-    info!("[MASTER] Mode: SEQUENTIAL. Total Cores: {}. Workers per Task: {}.", 
+    info!("[MASTER] Mode: SEQUENTIAL BATCH (Square Constraint). Total Cores: {}. Workers per Task: {}.", 
         total_cpu_cores, n_workers);
 
     let input_file_path = &args.main_args.input;
@@ -127,7 +125,7 @@ fn solve_single_task(
     let task_dir = format!("{}/qty_{}", OUTPUT_DIR, target_qty);
     fs::create_dir_all(&task_dir)?;
 
-    // 2. THIẾT LẬP CONFIG "ULTRA" (HẠNG NẶNG)
+    // 2. THIẾT LẬP CONFIG "ULTRA" (HẠNG NẶNG CHO BATCH RUN)
     let mut config = DEFAULT_SPARROW_CONFIG;
     config.rng_seed = args.rng_seed
         .map(|s| s as usize)
@@ -138,7 +136,7 @@ fn solve_single_task(
     config.expl_cfg.separator_config.n_workers = n_workers;
     config.cmpr_cfg.separator_config.n_workers = n_workers;
 
-    // B. Ultra Sampling
+    // B. Ultra Sampling (Giữ nguyên cấu hình cao để tìm lời giải tốt nhất)
     let ultra_sample_config = SampleConfig {
         n_container_samples: 200, 
         n_focussed_samples: 100,  
@@ -154,66 +152,74 @@ fn solve_single_task(
     // D. Geometry Precision
     config.poly_simpl_tolerance = Some(0.0001);
 
-    // E. Smart Shrink
-    config.cmpr_cfg.shrink_decay = ShrinkDecayStrategy::FailureBased(0.98);
+    // E. Time Limits (Quan trọng: Đặt thời gian đủ lâu cho việc nén hình vuông)
+    // Nếu args CLI có truyền time thì dùng, không thì dùng mặc định khá rộng rãi cho batch
+    config.expl_cfg.time_limit = Duration::from_secs(120); // 2 phút explore
+    config.cmpr_cfg.time_limit = Duration::from_secs(60);  // 1 phút compress
+    if let Some(gt) = args.global_time {
+        config.expl_cfg.time_limit = Duration::from_secs(gt).mul_f64(DEFAULT_EXPLORE_TIME_RATIO);
+        config.cmpr_cfg.time_limit = Duration::from_secs(gt).mul_f64(DEFAULT_COMPRESS_TIME_RATIO);
+    }
 
-    let input_file_path = &args.input;
-    
-    let ext_instance = io::read_spp_instance_json(Path::new(&input_file_path))?;
+    // 3. CHUẨN BỊ DỮ LIỆU & TÍNH TOÁN DIỆN TÍCH
     let importer = Importer::new(config.cde_config, config.poly_simpl_tolerance, config.min_item_separation, config.narrow_concavity_cutoff_ratio);
     
+    // Import để lấy thông tin hình học chính xác
     let base_instance = jagua_rs::probs::spp::io::import(&importer, &ext_instance)?;
-    let n = base_instance.item_qty(0) as f64;
-    
-    // Kích thước khởi tạo = Căn bậc 2 diện tích * 1.3 (để thuật toán Explore có chỗ "thở" lúc đầu rồi co dần)
+
+    let n = target_qty as f64;
+    // Kích thước khởi tạo an toàn: Căn bậc 2 diện tích * 1.3
     let start_size = (0.3 * n).sqrt();
-    
-    info!("[MAIN] Starting Square Size: {:.2}", start_size);
+    info!("[Job {}] Start Square Size: {:.2}", target_qty, start_size);
 
-    // Setup instance khởi tạo là hình vuông
-    let mut start_instance_snapshot = ext_instance.clone();
-    start_instance_snapshot.strip_height = start_size;
+    // Set chiều cao/rộng khởi tạo cho instance
+    let mut current_ext_instance = ext_instance.clone();
+    current_ext_instance.strip_height = start_size;
 
+    let instance_struct = jagua_rs::probs::spp::io::import(&importer, &current_ext_instance)?;
+
+    // 4. CHẠY OPTIMIZE (SINGLE RUN - SQUARE CONSTRAINT)
+    // Không dùng vòng lặp Binary Search nữa, để thuật toán tự co (shrink) hình vuông
     let rng = Xoshiro256PlusPlus::seed_from_u64(master_seed);
-    let mut ctrlc_terminator = CtrlCTerminator::new();
+    let mut ctrlc_terminator = CtrlCTerminator::new(); 
     
-    // --- 5. CHẠY OPTIMIZE (MỘT LẦN DUY NHẤT) ---
-    // Không cần vòng lặp while dò tìm nữa
-    
-    let instance_struct = jagua_rs::probs::spp::io::import(&importer, &start_instance_snapshot)?;
-    
-    // Setup exporter
-    let final_svg_path = Some(format!("{OUTPUT_DIR}/final_square.svg"));
-    let mut exporter = SvgExporter::new(final_svg_path, None, None);
+    let final_svg_path = Some(format!("{}/result.svg", task_dir));
+    let mut final_exporter = SvgExporter::new(final_svg_path, None, None);
 
-    info!("=== STARTING OPTIMIZATION (Square Constraint) ===");
-    
-    let final_solution = optimize(
-        instance_struct.clone(),
-        rng,
-        &mut exporter,
-        &mut ctrlc_terminator,
-        &config.expl_cfg, 
-        &config.cmpr_cfg
-    );
+    // Dùng catch_unwind để đảm bảo 1 job chết không kéo theo cả batch
+    let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
+        optimize(
+            instance_struct.clone(),
+            rng,
+            &mut final_exporter,
+            &mut ctrlc_terminator,
+            &config.expl_cfg,
+            &config.cmpr_cfg
+        )
+    }));
 
-    let final_size = final_solution.strip_width(); // Vì là hình vuông nên Width = Size
-    info!("=== FINISHED. Best Square Side: {:.3} ===", final_size);
+    match result {
+        Ok(final_solution) => {
+            let final_size = final_solution.strip_width();
+            info!("[Job {}] SUCCESS. Final Square Side: {:.3}", target_qty, final_size);
 
-    // --- 6. XUẤT KẾT QUẢ ---
-    let json_path = format!("{OUTPUT_DIR}/final_square_{:.2}.json", final_size);
-    let output_struct = SPOutput {
-        instance: start_instance_snapshot, // Lưu ý: Instance gốc này có thể chưa cập nhật size cuối cùng
-        solution: jagua_rs::probs::spp::io::export(&instance_struct, &final_solution, *EPOCH)
-    };
-    io::write_json(&output_struct, Path::new(json_path.as_str()), Level::Info)?;
-    
-    let num_points = output_struct.solution.layout.placed_items.len();
-    let csv_path = format!("{OUTPUT_DIR}/final_{num_points}.csv");
-    if let Err(e) = io::write_csv(&output_struct.solution, Path::new(&csv_path)) {
-        error!("Failed to write CSV: {}", e);
-    } else {
-        info!("Saved CSV result to {}", csv_path);
+            // Cập nhật lại snapshot instance để output JSON đúng kích thước
+            let mut final_snapshot = current_ext_instance.clone();
+            final_snapshot.strip_height = final_size;
+
+            let json_path = format!("{}/result.json", task_dir);
+            let output_struct = SPOutput {
+                instance: final_snapshot,
+                solution: jagua_rs::probs::spp::io::export(&instance_struct, &final_solution, *EPOCH)
+            };
+            io::write_json(&output_struct, Path::new(&json_path), log::Level::Info)?;
+
+            let csv_path = format!("{}/result.csv", task_dir);
+            io::write_csv(&output_struct.solution, Path::new(&csv_path))?;
+        }
+        Err(_) => {
+            error!("[Job {}] FAILED due to panic.", target_qty);
+        }
     }
 
     Ok(())
