@@ -3,7 +3,7 @@
   "items": [
     {
       "id": 0,
-      "demand": 3,
+      "demand": 5,
       "dxf": "dxf/i_0.dxf",
       "shape": {
         "type": "simple_polygon",
