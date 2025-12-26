@@ -140,22 +140,26 @@ fn solve_single_task(
     let ultra_sample_config = SampleConfig {
         n_container_samples: 200, 
         n_focussed_samples: 100,  
-        n_coord_descents: 10,     
+        n_coord_descents: 20,     
     };
     config.expl_cfg.separator_config.sample_config = ultra_sample_config;
     config.cmpr_cfg.separator_config.sample_config = ultra_sample_config;
 
     // C. Persistence
-    config.expl_cfg.separator_config.iter_no_imprv_limit = 500;
-    config.expl_cfg.separator_config.strike_limit = 10;
+    config.expl_cfg.separator_config.iter_no_imprv_limit = 1000;
+    config.cmpr_cfg.separator_config.iter_no_imprv_limit = 1000;
+
+    config.expl_cfg.separator_config.strike_limit = 20;
+
+    config.cmpr_cfg.shrink_decay = ShrinkDecayStrategy::FailureBased(0.99);
     
     // D. Geometry Precision
-    config.poly_simpl_tolerance = Some(0.0001);
+    config.poly_simpl_tolerance = Some(0.00001);
 
     // E. Time Limits (Quan trọng: Đặt thời gian đủ lâu cho việc nén hình vuông)
     // Nếu args CLI có truyền time thì dùng, không thì dùng mặc định khá rộng rãi cho batch
-    config.expl_cfg.time_limit = Duration::from_secs(120); // 2 phút explore
-    config.cmpr_cfg.time_limit = Duration::from_secs(60);  // 1 phút compress
+    config.expl_cfg.time_limit = Duration::from_secs(180); // 2 phút explore
+    config.cmpr_cfg.time_limit = Duration::from_secs(120);  // 1 phút compress
     if let Some(gt) = args.global_time {
         config.expl_cfg.time_limit = Duration::from_secs(gt).mul_f64(DEFAULT_EXPLORE_TIME_RATIO);
         config.cmpr_cfg.time_limit = Duration::from_secs(gt).mul_f64(DEFAULT_COMPRESS_TIME_RATIO);
