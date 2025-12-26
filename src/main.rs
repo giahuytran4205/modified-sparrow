@@ -201,7 +201,10 @@ fn solve_single_task(
     match result {
         Ok(final_solution) => {
             let final_size = final_solution.strip_width();
-            info!("[Job {}] SUCCESS. Final Square Side: {:.3}", target_qty, final_size);
+            let final_score = final_size * final_size / n;
+            info!("[Job {}] SUCCESS.", target_qty);
+            info!("Final Square Side: {:.10}", final_size);
+            info!("Final Score: {:.10}", final_score);
 
             // Cập nhật lại snapshot instance để output JSON đúng kích thước
             let mut final_snapshot = current_ext_instance.clone();

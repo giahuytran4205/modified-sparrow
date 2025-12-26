@@ -87,6 +87,7 @@ pub fn exploration_phase(instance: &SPInstance, sep: &mut Separator, sol_listene
 }
 
 fn disrupt_solution(sep: &mut Separator, config: &ExplorationConfig) {
+    return;
     if sep.prob.layout.placed_items.len() < 2 {
         warn!("[DSRP] cannot disrupt solution with less than 2 items");
         return;
