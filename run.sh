@@ -1,0 +1,1 @@
+cargo run --release --features=only_final_svg -- -i a.json -n 5

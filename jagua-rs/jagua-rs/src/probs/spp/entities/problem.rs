@@ -35,6 +35,14 @@ impl SPProblem {
         self.layout.swap_container(self.strip.into());
     }
 
+    /// Updates both width and height to maintain a square shape
+    pub fn change_square_size(&mut self, new_size: f64) {
+        self.strip.set_width(new_size);
+        self.strip.fixed_height = new_size; 
+        
+        self.layout.swap_container(self.strip.into());
+    }
+
     /// Shrinks the strip to the minimum width that fits all items.
     pub fn fit_strip(&mut self) {
         let feasible_before = self.layout.is_feasible();

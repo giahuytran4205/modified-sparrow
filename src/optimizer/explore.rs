@@ -19,13 +19,13 @@ use crate::util::terminator::Terminator;
 
 /// Algorithm 12 from https://doi.org/10.48550/arXiv.2509.13329
 pub fn exploration_phase(instance: &SPInstance, sep: &mut Separator, sol_listener: &mut impl SolutionListener,  term: &impl Terminator, config: &ExplorationConfig) -> Vec<SPSolution> {
-    let mut current_width = sep.prob.strip_width();
-    let mut best_width = current_width;
+    let mut current_size = sep.prob.strip_width(); // Width = Height
+    let mut best_size = current_size;
 
     let mut feasible_solutions = vec![sep.prob.save()];
 
     sol_listener.report(ReportType::ExplFeas, &feasible_solutions[0], instance);
-    info!("[EXPL] starting optimization with initial width: {:.3} ({:.3}%)",current_width,sep.prob.density() * 100.0);
+    info!("[EXPL] starting optimization with initial square size: {:.3} ({:.3}%)", current_size, sep.prob.density() * 100.0);
 
     let mut solution_pool: Vec<(SPSolution, f64)> = vec![];
 
@@ -34,20 +34,23 @@ pub fn exploration_phase(instance: &SPInstance, sep: &mut Separator, sol_listene
         let total_loss = local_best.1.get_total_loss();
 
         if total_loss == 0.0 {
-            //layout is successfully separated
-            if current_width < best_width {
-                info!("[EXPL] feasible solution found! (width: {:.3}, dens: {:.3}%)",current_width,sep.prob.density() * 100.0);
-                best_width = current_width;
+            // Feasible found
+            if current_size < best_size {
+                info!("[EXPL] feasible square found! (size: {:.3}, dens: {:.3}%)", current_size, sep.prob.density() * 100.0);
+                best_size = current_size;
                 feasible_solutions.push(local_best.0.clone());
                 sol_listener.report(ReportType::ExplFeas, &local_best.0, instance);
             }
-            let next_width = current_width * (1.0 - config.shrink_step);
-            info!("[EXPL] shrinking strip by {}%: {:.3} -> {:.3}", config.shrink_step * 100.0, current_width, next_width);
-            sep.change_strip_width(next_width, None);
-            current_width = next_width;
+            // THAY ĐỔI Ở ĐÂY: Thu nhỏ cả hình vuông
+            let next_size = current_size * (1.0 - config.shrink_step);
+            info!("[EXPL] shrinking square by {}%: {:.3} -> {:.3}", config.shrink_step * 100.0, current_size, next_size);
+            
+            // Dùng hàm mới change_square_size
+            sep.change_square_size(next_size, None);
+            current_size = next_size;
             solution_pool.clear();
         } else {
-            info!("[EXPL] unable to reach feasibility (width: {:.3}, dens: {:.3}%, min loss: {:.3})", current_width, sep.prob.density() * 100.0, FMT().fmt2(total_loss));
+            info!("[EXPL] unable to reach feasibility (size: {:.3}, ...)", current_size);
             sol_listener.report(ReportType::ExplInfeas, &local_best.0, instance);
 
             //layout was not successfully separated, add to local bests
@@ -78,7 +81,7 @@ pub fn exploration_phase(instance: &SPInstance, sep: &mut Separator, sol_listene
         }
     }
 
-    info!("[EXPL] finished, best feasible solution: width: {:.3} ({:.3}%)",best_width,feasible_solutions.last().unwrap().density(instance) * 100.0);
+    info!("[EXPL] finished, best feasible solution: size: {:.3} ({:.3}%)",best_size,feasible_solutions.last().unwrap().density(instance) * 100.0);
 
     feasible_solutions
 }

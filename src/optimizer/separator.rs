@@ -68,6 +68,40 @@ impl Separator {
         }
     }
 
+    pub fn change_square_size(&mut self, new_size: f64, split_position: Option<f64>) {
+        let split_position = split_position.unwrap_or(self.prob.strip_width() / 2.0);
+        let delta = new_size - self.prob.strip_width(); // Tính độ lệch size
+
+        // Logic dịch chuyển item theo trục X để tránh va chạm dồn cục (giữ nguyên logic heuristic cũ)
+        let items_to_shift = self.prob.layout.placed_items.iter()
+            .filter(|(_, pi)| pi.shape.centroid().0 > split_position)
+            .map(|(k, pi)| (k, pi.d_transf))
+            .collect_vec();
+
+        for (pik, dtransf) in items_to_shift {
+            let existing_transf = dtransf.compose();
+            // Chỉ dịch chuyển X, để Solver tự lo việc va chạm Y (sẽ hiệu quả hơn là ta tự đoán)
+            let new_transf = existing_transf.translate((delta, 0.0));
+            self.move_item(pik, new_transf.decompose());
+        }
+
+        // GỌI HÀM MỚI CỦA PROBLEM
+        self.prob.change_square_size(new_size);
+
+        // Rebuild tracker và workers như cũ
+        self.ct = CollisionTracker::new(&self.prob.layout);
+        self.workers.iter_mut().for_each(|opt| {
+            *opt = SeparatorWorker {
+                instance: self.instance.clone(),
+                prob: self.prob.clone(),
+                ct: self.ct.clone(),
+                rng: Xoshiro256PlusPlus::seed_from_u64(self.rng.random()),
+                sample_config: self.config.sample_config.clone(),
+            };
+        });
+        debug!("[SEP] changed square size to {:.3}", new_size);
+    }
+
     /// Algorithm 9 from https://doi.org/10.48550/arXiv.2509.13329
     pub fn separate(&mut self, term: &impl Terminator, sol_listener: &mut impl SolutionListener) -> (SPSolution, CTSnapshot) {
         let mut min_loss_sol = (self.prob.save(), self.ct.save());

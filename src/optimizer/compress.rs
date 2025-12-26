@@ -53,13 +53,13 @@ pub fn compression_phase(
 
 fn attempt_to_compress(sep: &mut Separator, init: &SPSolution, r_shrink: f64, term: &impl Terminator, sol_listener: &mut impl SolutionListener) -> Option<SPSolution> {
     //restore to the initial solution and width
-    sep.change_strip_width(init.strip_width(), None);
+    sep.change_square_size(init.strip_width(), None);
     sep.rollback(&init, None);
 
     //shrink the container at a random position
-    let new_width = init.strip_width() * (1.0 - r_shrink);
+    let new_size = init.strip_width() * (1.0 - r_shrink);
     let split_pos = sep.rng.random_range(0.0..sep.prob.strip_width());
-    sep.change_strip_width(new_width, Some(split_pos));
+    sep.change_square_size(new_size, Some(split_pos));
 
     //try to separate layout, if all collisions are eliminated, return the solution
     let (compacted_sol, ot) = sep.separate(term, sol_listener);
