@@ -219,9 +219,9 @@ fn solve_single_task(
                 instance: final_snapshot,
                 solution: jagua_rs::probs::spp::io::export(&instance_struct, &final_solution, *EPOCH)
             };
-            io::write_json(&output_struct, Path::new(&json_path), log::Level::Info)?;
+            // io::write_json(&output_struct, Path::new(&json_path), log::Level::Info)?;
 
-            let csv_path = format!("{}/result.csv", task_dir);
+            let csv_path = format!("output/result.csv");
             io::write_csv(&output_struct.solution, Path::new(&csv_path))?;
         }
         Err(_) => {

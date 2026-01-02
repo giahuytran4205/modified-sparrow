@@ -9,6 +9,7 @@ use svg::Document;
 use anyhow::{Context, Result};
 use clap::Parser;
 use jagua_rs::probs::spp::io::ext_repr::{ExtSPInstance, ExtSPSolution};
+use std::fs::OpenOptions;
 use crate::EPOCH;
 
 #[derive(Parser)]
@@ -113,15 +114,35 @@ pub fn write_json(json: &impl Serialize, path: &Path, log_lvl: Level) -> Result<
 }
 
 pub fn write_csv(solution: &ExtSPSolution, path: &Path) -> Result<()> {
-    let mut file = File::create(path)?;
-    writeln!(file, "id,x,y,deg")?;
+    // 1. Kiểm tra xem file có cần ghi header không 
+    // (Cần ghi nếu file chưa tồn tại hoặc kích thước = 0)
+    let write_header = !path.exists() || std::fs::metadata(path).map(|m| m.len() == 0).unwrap_or(true);
+
+    // 2. Mở file với chế độ Append (Ghi tiếp)
+    let mut file = OpenOptions::new()
+        .create(true) // Tạo file nếu chưa có
+        .append(true) // Ghi tiếp vào cuối file nếu đã có
+        .open(path)?;
+
+    // 3. Chỉ ghi header nếu là file mới
+    if write_header {
+        writeln!(file, "id,x,y,deg")?;
+    }
+
+    // 4. Ghi dữ liệu
     let size = solution.layout.placed_items.len();
-    let size_str = format!("{size:0>3}");
+    let size_str = format!("{:0>3}", size); // Format số lượng item (ví dụ 050)
+
+    // Lưu ý: Nếu placed_items là SlotMap (thường thấy trong jagua-rs), 
+    // .iter() trả về (key, value). Nếu item là value, bạn cần destruct hoặc dùng .values()
     for (i, item) in solution.layout.placed_items.iter().enumerate() {
+        // Tùy vào cấu trúc ExtSPSolution của bạn, nếu item là tuple (key, val) thì dùng item.1
+        // Ở đây giữ nguyên logic truy cập field như code gốc của bạn
         let x = item.transformation.translation.0;
         let y = item.transformation.translation.1;
         let rotation = item.transformation.rotation;
-        writeln!(file, "{size_str}_{i},s{x},s{y},s{rotation}")?;
+        
+        writeln!(file, "{}_{},s{},s{},s{}", size_str, i, x, y, rotation)?;
     }
 
     Ok(())
