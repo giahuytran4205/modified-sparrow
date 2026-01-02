@@ -44,10 +44,10 @@ pub struct BatchCli {
     pub main_args: MainCli,
 
     #[clap(long, default_value = "10")]
-    pub start_qty: usize,
+    pub start: usize,
 
     #[clap(long, default_value = "50")]
-    pub end_qty: usize,
+    pub end: usize,
 
     #[clap(long, default_value = "1")]
     pub step_qty: usize,
@@ -81,9 +81,9 @@ fn main() -> Result<()> {
     let base_ext_instance = io::read_spp_instance_json(Path::new(&input_file_path))?;
 
     // 3. VÒNG LẶP TUẦN TỰ (SEQUENTIAL LOOP)
-    let mut qty = args.start_qty;
+    let mut qty = args.start;
     
-    while qty <= args.end_qty {
+    while qty <= args.end {
         info!("\n========================================");
         info!("[MASTER] Starting Job: {} items", qty);
         info!("========================================");
