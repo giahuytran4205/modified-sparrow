@@ -173,7 +173,7 @@ fn solve_single_task(
 
     let n = target_qty as f64;
     // Kích thước khởi tạo an toàn: Căn bậc 2 diện tích * 1.3
-    let start_size = (0.3 * n).sqrt();
+    let start_size = (0.4 * n).sqrt();
     info!("[Job {}] Start Square Size: {:.2}", target_qty, start_size);
 
     // Set chiều cao/rộng khởi tạo cho instance
