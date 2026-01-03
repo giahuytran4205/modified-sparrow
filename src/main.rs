@@ -110,9 +110,8 @@ pub struct BatchCli {
     #[clap(long, default_value = "1")]
     pub step_qty: usize,
 
-    /// Số core dành cho MỖI task (Ví dụ: 8)
-    #[clap(long, default_value = "8")]
-    pub cores_per_task: usize,
+    #[clap(long)]
+    pub cores_per_task: Option<usize>,
 }
 
 fn main() -> Result<()> {
@@ -130,7 +129,7 @@ fn main() -> Result<()> {
     }
 
     // 2. TÍNH TOÁN PHÂN BỔ RESOURCE
-    let cores_per_task = args.cores_per_task;
+    let cores_per_task = args.cores_per_task.unwrap_or(total_system_cores);
     // Số lượng task chạy song song tối đa = Tổng core hệ thống / Core mỗi task
     // Ví dụ: 32 / 8 = 4 tasks song song
     let max_parallel_tasks = std::cmp::max(1, total_system_cores / cores_per_task);
