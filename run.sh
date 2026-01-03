@@ -1,1 +1,1 @@
-cargo run --release --features=only_final_svg -- -i a.json --start 10 --end 200 --cores-per-task 8
+cargo run --release --features=only_final_svg -- -i a.json --start 20 --end 20
