@@ -15,7 +15,7 @@ use std::time::Duration;
 use jagua_rs::io::import::Importer;
 use sparrow::EPOCH;
 use sparrow::util::terminator::Terminator; // Import trait Terminator
-use std::sync::{Arc, Mutex};
+use std::sync::{Mutex};
 use jagua_rs::Instant;
 
 // Import các struct config cần thiết
