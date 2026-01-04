@@ -80,6 +80,8 @@ fn main() -> Result<()> {
     let input_file_path = &args.main_args.input;
     let base_ext_instance = io::read_spp_instance_json(Path::new(&input_file_path))?;
 
+    let mut ctrlc_terminator = CtrlCTerminator::new();
+
     // 3. VÒNG LẶP TUẦN TỰ (SEQUENTIAL LOOP)
     let mut qty = args.start;
     
@@ -93,7 +95,8 @@ fn main() -> Result<()> {
             qty, 
             n_workers, 
             base_ext_instance.clone(),
-            &args.main_args
+            &args.main_args,
+            &mut ctrlc_terminator
         ) {
             error!("[MASTER] Job {} failed: {}", qty, e);
         } else {
@@ -111,7 +114,8 @@ fn solve_single_task(
     target_qty: usize, 
     n_workers: usize, 
     mut ext_instance: ExtSPInstance,
-    args: &MainCli
+    args: &MainCli,
+    terminator: &mut CtrlCTerminator
 ) -> Result<()> {
     
     // 1. CẬP NHẬT SỐ LƯỢNG ITEM
@@ -159,7 +163,7 @@ fn solve_single_task(
     // E. Time Limits (Quan trọng: Đặt thời gian đủ lâu cho việc nén hình vuông)
     // Nếu args CLI có truyền time thì dùng, không thì dùng mặc định khá rộng rãi cho batch
     config.expl_cfg.time_limit = Duration::from_secs(180); // 2 phút explore
-    config.cmpr_cfg.time_limit = Duration::from_secs(120);  // 1 phút compress
+    config.cmpr_cfg.time_limit = Duration::from_secs(180);  // 1 phút compress
     if let Some(gt) = args.global_time {
         config.expl_cfg.time_limit = Duration::from_secs(gt).mul_f64(DEFAULT_EXPLORE_TIME_RATIO);
         config.cmpr_cfg.time_limit = Duration::from_secs(gt).mul_f64(DEFAULT_COMPRESS_TIME_RATIO);
@@ -185,7 +189,6 @@ fn solve_single_task(
     // 4. CHẠY OPTIMIZE (SINGLE RUN - SQUARE CONSTRAINT)
     // Không dùng vòng lặp Binary Search nữa, để thuật toán tự co (shrink) hình vuông
     let rng = Xoshiro256PlusPlus::seed_from_u64(master_seed);
-    let mut ctrlc_terminator = CtrlCTerminator::new(); 
     
     let final_svg_path = Some(format!("{}/result.svg", task_dir));
     let mut final_exporter = SvgExporter::new(final_svg_path, None, None);
