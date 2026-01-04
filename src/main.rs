@@ -115,7 +115,7 @@ fn solve_single_task(
     n_workers: usize, 
     mut ext_instance: ExtSPInstance,
     args: &MainCli,
-    terminator: &mut CtrlCTerminator
+    ctrlc_terminator: &mut CtrlCTerminator
 ) -> Result<()> {
     
     // 1. CẬP NHẬT SỐ LƯỢNG ITEM
@@ -199,7 +199,7 @@ fn solve_single_task(
             instance_struct.clone(),
             rng,
             &mut final_exporter,
-            &mut ctrlc_terminator,
+            ctrlc_terminator,
             &config.expl_cfg,
             &config.cmpr_cfg
         )
