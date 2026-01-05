@@ -162,8 +162,8 @@ fn solve_single_task(
 
     // E. Time Limits (Quan trọng: Đặt thời gian đủ lâu cho việc nén hình vuông)
     // Nếu args CLI có truyền time thì dùng, không thì dùng mặc định khá rộng rãi cho batch
-    config.expl_cfg.time_limit = Duration::from_secs(180); // 2 phút explore
-    config.cmpr_cfg.time_limit = Duration::from_secs(300);  // 1 phút compress
+    config.expl_cfg.time_limit = Duration::from_secs(240); // 2 phút explore
+    config.cmpr_cfg.time_limit = Duration::from_secs(120);  // 1 phút compress
     if let Some(gt) = args.global_time {
         config.expl_cfg.time_limit = Duration::from_secs(gt).mul_f64(DEFAULT_EXPLORE_TIME_RATIO);
         config.cmpr_cfg.time_limit = Duration::from_secs(gt).mul_f64(DEFAULT_COMPRESS_TIME_RATIO);
