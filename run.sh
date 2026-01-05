@@ -1,1 +1,1 @@
-cargo run --release --features=only_final_svg -- -i a.json --start 20 --end 20
+cargo run --release --features=only_final_svg -- -i a.json --start 36 --end 40
